@@ -1,0 +1,48 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+	.row {
+		display: flex;
+		align-items: center;
+		gap: 60px;
+	}
+	.column {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+	button {
+		width: 60px;
+		height: 60px;
+		font-size: 15;
+		margin: 2px;
+		border: none;
+		border-radius: 10px;
+		background-color: white;
+	}
+	.container {
+		padding: 10px;
+		width: 360px;
+		background-color: black;
+		color: white;
+		border-radius: 10px;
+	}
+</style>
+<div class="column container">
+	<canvas width="360" height="360" style="border: 2px solid white"></canvas>
+	<p>Score: <span>0</span></p>
+	<div class="row">
+		<div class="column">
+			<button>U</button>
+			<div class="row">
+				<button>L</button>
+				<button>R</button>
+			</div>
+			<button>D</button>
+		</div>
+		<div style="flex-grow: 1"></div>
+		<div class="column">
+			<button>Play</button>
+			<button>Pause</button>
+		</div>
+	</div>
+</div>
