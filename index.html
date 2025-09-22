@@ -110,21 +110,23 @@
 	}
 	function run() {
 		// function to run the game loop
-		if (!is_playing) return;
-		setTimeout(() => {
-			move();
-			render();
-			run();
-		}, 200);
+		if (is_playing) {
+			setTimeout(() => {
+				move();
+				render();
+				run();
+			}, 200);
+		}
 	}
 	function begin() {
 		// function to initialize a game
-		if (!is_playing) return;
-		snake = [...Array(5).keys()].map((i) => [10, 10 + i]);
-		make_fruit();
-		dr = [0, -1];
-		dirs = [];
-		run();
+		if (is_playing) {
+			snake = [...Array(5).keys()].map((i) => [10, 10 + i]);
+			make_fruit();
+			dr = [0, -1];
+			dirs = [];
+			run();
+		}
 	}
 	function toggle_pause() {
 		// function to toggle between pausing and playing the game
@@ -138,10 +140,12 @@
 	}
 	function add(d0) {
 		// function to add a direction to dirs
-		let comp;
-		if (dirs.length) comp = dirs[dirs.length - 1];
-		else comp = dr;
-		if (!(comp[0] * d0[0] + comp[1] * d0[1])) dirs.push(d0);
+		if (is_playing) {
+			let comp;
+			if (dirs.length) comp = dirs[dirs.length - 1];
+			else comp = dr;
+			if (!(comp[0] * d0[0] + comp[1] * d0[1])) dirs.push(d0);
+		}
 	}
 	document.addEventListener("keydown", (e) => {
 		switch (e.key) {
