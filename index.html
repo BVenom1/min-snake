@@ -1,23 +1,19 @@
-<meta name="viewport"content="width=device-width,initial-scale=1.0" />
-<style>.row{display:flex;align-items:center;gap:60px}.column{display:flex;flex-direction:column;align-items:center}button{width:60px;height:60px;font-size:15;margin:2px;border:none;border-radius:10px;background-color:white}.container{padding:10px;width:360px;background-color:black;color:white;border-radius:10px;}</style>
-<div class="column container"><canvas width="360"height="360"style="border: 2px solid white"></canvas><p>Score: <span>0</span></p><div class="row">
-<div class="column"><button onclick="add([0,-1])">U</button><div class="row"><button onclick="add([-1,0])">L</button><button onclick="add([1,0])">R</button></div><button onclick="add([0,1])">D</button></div>
-<div style="flex-grow: 1"></div><div class="column"><button onclick="toggle_stop()">Play</button><button onclick="toggle_pause()">Pause</button></div></div></div>
+<meta name="viewport"content="width=device-width,initial-scale=1.0"/>
+<style>.row{display:flex;align-items:center;gap:60px}.clm{display:flex;flex-direction:column;align-items:center}button{width:60px;height:60px;font-size:15;margin:2px;border:none;border-radius:10px;background-color:white}.ctn{padding:10px;width:360px;background-color:black;color:white;border-radius:10px;}</style>
+<div class="clm ctn"><canvas width="360"height="360"style="border: 2px solid white"></canvas><p>Score: <span>0</span></p><div class="row">
+<div class="clm"><button onclick="a([0,-1])">U</button><div class="row"><button onclick="a([-1,0])">L</button><button onclick="a([1,0])">R</button></div><button onclick="a([0,1])">D</button></div>
+<div style="flex-grow: 1"></div><div class="clm"><button onclick="ts()">Play</button><button onclick="tp()">Pause</button></div></div></div>
 <script>
-	const game=document.querySelector("canvas").getContext("2d");const score_display=document.querySelector("span")
-	let snake=[];let fruit=[];let dirs=[];let dr=[];let is_playing=false
-	function clear(){game.fillStyle="black";game.fillRect(0,0,360,360)}clear()
-	function render_single(color_,pos_){game.fillStyle=color_;game.fillRect(pos_[0]*18,pos_[1]*18,18,18)}
-	function render(){clear();snake.forEach(cell=>render_single("lightgreen",cell));render_single("orange",fruit)}
-	function random(){return Math.floor(Math.random()*20)}
-	function make_fruit(){do{fruit=[random(),random()]}while(snake.some(cell=>fruit[0]==cell[0]&&fruit[1]==cell[1]))}
-	function move(){if(dirs.length>0){dr=dirs.shift()}const head=[snake[0][0]+dr[0],snake[0][1]+dr[1]];
-		if(head[0]<0||head[0]>19||head[1]<0||head[1]>19||snake.some(cell=>head[0]==cell[0]&&head[1]==cell[1])){is_playing=false;return}
-		if(head[0]==fruit[0]&&head[1]==fruit[1]){score_display.innerText=parseInt(score_display.innerText)+1;make_fruit()}else snake.pop();snake.unshift(head)}
-	function run(){if(is_playing){setTimeout(()=>{move();render();run()},200)}}
-	function begin(){if(is_playing){snake=[...Array(5).keys()].map((i)=>[10,10+i]);make_fruit();dr=[0,-1];dirs=[];run()}}
-	function toggle_pause(){is_playing=!is_playing;run()}
-	function toggle_stop(){is_playing=!is_playing;begin()}
-	function add(d0){if(is_playing){let comp;if(dirs.length)comp=dirs[dirs.length-1];else comp=dr;if(!(comp[0]*d0[0]+comp[1]*d0[1]))dirs.push(d0)}}
-	document.addEventListener("keydown",(e)=>{switch(e.key){case"ArrowUp":add([0,-1]);break;case"ArrowDown":add([0,1]);break;case"ArrowLeft":add([-1,0]);break;case"ArrowRight":add([1,0]);break;case"Enter":toggle_stop();break;case" ":toggle_pause();break}})
+	const g=document.querySelector("canvas").getContext("2d");const sc=document.querySelector("span")
+	let snk=[];let f=[-1,-1];let ds=[];let dr=[];let ip=false
+	function rs(c,p){g.fillStyle=c;g.fillRect(p[0]*18,p[1]*18,18,18)}
+	function rn(){return Math.floor(Math.random()*20)}
+	function mf(){do{f=[rn(),rn()]}while(snk.some(c=>f[0]==c[0]&&f[1]==c[1]))}
+	function r(){if(ip){setTimeout(()=>{if(ds.length>0){dr=ds.shift()}const head=[snk[0][0]+dr[0],snk[0][1]+dr[1]];
+		if(head[0]<0||head[0]>19||head[1]<0||head[1]>19||snk.some(c=>head[0]==c[0]&&head[1]==c[1])){ip=false;return}
+		if(head[0]==f[0]&&head[1]==f[1]){sc.innerText=parseInt(sc.innerText)+1;mf()}else snk.pop();snk.unshift(head);g.fillStyle="black";g.fillRect(0,0,360,360);snk.forEach(c=>rs("lightgreen",c));rs("orange",f);r()},200)}}
+	function tp(){ip=!ip;r()}
+	function ts(){ip=!ip;if(ip){snk=[...Array(5).keys()].map((i)=>[10,10+i]);mf();dr=[0,-1];ds=[];sc.innerText=0;r()}}
+	function a(d0){if(ip){let c;if(ds.length)c=ds[ds.length-1];else c=dr;if(!(c[0]*d0[0]+c[1]*d0[1]))ds.push(d0)}}
+	document.addEventListener("keydown",(e)=>{switch(e.key){case"ArrowUp":a([0,-1]);break;case"ArrowDown":a([0,1]);break;case"ArrowLeft":a([-1,0]);break;case"ArrowRight":a([1,0]);break;case"Enter":ts();break;case" ":tp();break}})
 </script>
