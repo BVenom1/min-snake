@@ -1,172 +1,23 @@
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<style>
-	.row {
-		display: flex;
-		align-items: center;
-		gap: 60px;
-	}
-	.column {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-	}
-	button {
-		width: 60px;
-		height: 60px;
-		font-size: 15;
-		margin: 2px;
-		border: none;
-		border-radius: 10px;
-		background-color: white;
-	}
-	.container {
-		padding: 10px;
-		width: 360px;
-		background-color: black;
-		color: white;
-		border-radius: 10px;
-	}
-</style>
-<div class="column container">
-	<canvas width="360" height="360" style="border: 2px solid white"></canvas>
-	<p>Score: <span>0</span></p>
-	<div class="row">
-		<div class="column">
-			<button onclick="add([0,-1])">U</button>
-			<div class="row">
-				<button onclick="add([-1,0])">L</button>
-				<button onclick="add([1,0])">R</button>
-			</div>
-			<button onclick="add([0,1])">D</button>
-		</div>
-		<div style="flex-grow: 1"></div>
-		<div class="column">
-			<button onclick="toggle_stop()">Play</button>
-			<button onclick="toggle_pause()">Pause</button>
-		</div>
-	</div>
-</div>
+<meta name="viewport"content="width=device-width,initial-scale=1.0" />
+<style>.row{display:flex;align-items:center;gap:60px}.column{display:flex;flex-direction:column;align-items:center}button{width:60px;height:60px;font-size:15;margin:2px;border:none;border-radius:10px;background-color:white}.container{padding:10px;width:360px;background-color:black;color:white;border-radius:10px;}</style>
+<div class="column container"><canvas width="360"height="360"style="border: 2px solid white"></canvas><p>Score: <span>0</span></p><div class="row">
+<div class="column"><button onclick="add([0,-1])">U</button><div class="row"><button onclick="add([-1,0])">L</button><button onclick="add([1,0])">R</button></div><button onclick="add([0,1])">D</button></div>
+<div style="flex-grow: 1"></div><div class="column"><button onclick="toggle_stop()">Play</button><button onclick="toggle_pause()">Pause</button></div></div></div>
 <script>
-	const game = document.querySelector("canvas").getContext("2d");
-	const score_display = document.querySelector("span");
-	let snake = []; // array that stores the cells of the snake's body
-	let fruit = []; // position of the fruit
-	let dirs = []; // queue of directions, for when the player changes directions in quick succession
-	let dr = []; // actual direction for the current iteration of the game loop
-	let is_playing = false; // boolean storing whether the game is still playing
-	function clear() {
-		// function to clear the game board
-		game.fillStyle = "black";
-		game.fillRect(0, 0, 360, 360);
-	}
-	clear(); // clear the game board when the page loads initially
-	function render_single(color_, pos_) {
-		// helper function, render a single cell onto the game board
-		game.fillStyle = color_;
-		game.fillRect(pos_[0] * 18, pos_[1] * 18, 18, 18);
-	}
-	function render() {
-		// render the snake and the fruit
-		clear();
-		snake.forEach((cell) => render_single("lightgreen", cell));
-		render_single("orange", fruit);
-	}
-	function random() {
-		// random number generator function
-		return Math.floor(Math.random() * 20);
-	}
-	function make_fruit() {
-		// function to create a new fruit after current fruit is eaten
-		do {
-			fruit = [random(), random()];
-		} while (
-			snake.some((cell) => fruit[0] == cell[0] && fruit[1] == cell[1])
-		);
-	}
-	function move() {
-		// function to move the snake once
-		if (dirs.length > 0) {
-			// get direction from dirs
-			dr = dirs.shift();
-		}
-		const head = [snake[0][0] + dr[0], snake[0][1] + dr[1]];
-		if (
-			head[0] < 0 ||
-			head[0] > 19 ||
-			head[1] < 0 ||
-			head[1] > 19 ||
-			snake.some((cell) => head[0] == cell[0] && head[1] == cell[1])
-		) {
-			// check for collisions
-			is_playing = false;
-			return;
-		}
-		if (head[0] == fruit[0] && head[1] == fruit[1]) {
-			// check if snake ate the fruit
-			score_display.innerText = parseInt(score_display.innerText) + 1;
-			make_fruit();
-		} else snake.pop();
-		snake.unshift(head);
-	}
-	function run() {
-		// function to run the game loop
-		if (is_playing) {
-			setTimeout(() => {
-				move();
-				render();
-				run();
-			}, 200);
-		}
-	}
-	function begin() {
-		// function to initialize a game
-		if (is_playing) {
-			snake = [...Array(5).keys()].map((i) => [10, 10 + i]);
-			make_fruit();
-			dr = [0, -1];
-			dirs = [];
-			run();
-		}
-	}
-	function toggle_pause() {
-		// function to toggle between pausing and playing the game
-		is_playing = !is_playing;
-		run();
-	}
-	function toggle_stop() {
-		// function to toggle between stopping and beginning the game
-		is_playing = !is_playing;
-		begin();
-	}
-	function add(d0) {
-		// function to add a direction to dirs
-		if (is_playing) {
-			let comp;
-			if (dirs.length) comp = dirs[dirs.length - 1];
-			else comp = dr;
-			if (!(comp[0] * d0[0] + comp[1] * d0[1])) dirs.push(d0);
-		}
-	}
-	document.addEventListener("keydown", (e) => {
-		switch (e.key) {
-			case "ArrowUp":
-				add([0, -1]);
-				break;
-			case "ArrowDown":
-				add([0, 1]);
-				break;
-			case "ArrowLeft":
-				add([-1, 0]);
-				break;
-			case "ArrowRight":
-				add([1, 0]);
-				break;
-			case "Enter":
-				toggle_stop();
-				break;
-			case " ":
-				toggle_pause();
-				break;
-		}
-	});
+	const game=document.querySelector("canvas").getContext("2d");const score_display=document.querySelector("span")
+	let snake=[];let fruit=[];let dirs=[];let dr=[];let is_playing=false
+	function clear(){game.fillStyle="black";game.fillRect(0,0,360,360)}clear()
+	function render_single(color_,pos_){game.fillStyle=color_;game.fillRect(pos_[0]*18,pos_[1]*18,18,18)}
+	function render(){clear();snake.forEach(cell=>render_single("lightgreen",cell));render_single("orange",fruit)}
+	function random(){return Math.floor(Math.random()*20)}
+	function make_fruit(){do{fruit=[random(),random()]}while(snake.some(cell=>fruit[0]==cell[0]&&fruit[1]==cell[1]))}
+	function move(){if(dirs.length>0){dr=dirs.shift()}const head=[snake[0][0]+dr[0],snake[0][1]+dr[1]];
+		if(head[0]<0||head[0]>19||head[1]<0||head[1]>19||snake.some(cell=>head[0]==cell[0]&&head[1]==cell[1])){is_playing=false;return}
+		if(head[0]==fruit[0]&&head[1]==fruit[1]){score_display.innerText=parseInt(score_display.innerText)+1;make_fruit()}else snake.pop();snake.unshift(head)}
+	function run(){if(is_playing){setTimeout(()=>{move();render();run()},200)}}
+	function begin(){if(is_playing){snake=[...Array(5).keys()].map((i)=>[10,10+i]);make_fruit();dr=[0,-1];dirs=[];run()}}
+	function toggle_pause(){is_playing=!is_playing;run()}
+	function toggle_stop(){is_playing=!is_playing;begin()}
+	function add(d0){if(is_playing){let comp;if(dirs.length)comp=dirs[dirs.length-1];else comp=dr;if(!(comp[0]*d0[0]+comp[1]*d0[1]))dirs.push(d0)}}
+	document.addEventListener("keydown",(e)=>{switch(e.key){case"ArrowUp":add([0,-1]);break;case"ArrowDown":add([0,1]);break;case"ArrowLeft":add([-1,0]);break;case"ArrowRight":add([1,0]);break;case"Enter":toggle_stop();break;case" ":toggle_pause();break}})
 </script>
