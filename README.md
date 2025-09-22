@@ -87,10 +87,10 @@ const score = document.querySelector("span");
 let snake;
 let fruit;
 let dir;
-let is_playing;
+let is_playing = false;
 ```
 
-At this point, none of the game variables are initialized. We will do this later.
+At this point, some game variables are not initialized. We will do this later.
 
 We will also implement a prompt queueing feature. In other words, we will make it so that if the player chenges direction twice in quick succession, instead of changing direction in a single step (which would in most cases be illegal), we will add the directions to a queue, from which we will take only one direction on every iteration of the game loop. Here is the variable for the queue:
 
@@ -109,7 +109,7 @@ game.fillRect(a, b, c, d);
 
 Here `color` can be any rgb color, or any predefined color in CSS inside a string. So we can have `game.fillStyle = '#2596be'` or `game.fillStyle = 'rgb(37, 150, 190)'` or `game.fillStyle = 'black'` or any other way you can define a CSS color. `a` is the distance of the rectangle from the left of the canvas, `b` is the distance from the top, `c` is the length of the rectangle in the x-direction, `d` is the length in the y-direction.
 
-![render rectangle to canvas](<./README-pics/render-rectangle.png>)
+![render rectangle to canvas](./README-pics/render-rectangle.png)
 
 Now let us write the code to render the snake to the screen.
 
@@ -155,11 +155,11 @@ The function `_rand` is a helper function to generate a random number between 0 
 
 ### Step 4: Moving the snake
 
-- To move the snake, we need to first get the direction the snake is moving in. Firstly, if `dir-queue` is not empty, we need to remove the first direction from it (we will add new directions to the end of `dir-queue` and remove directions from the front), and update `dir` with it.
+-   To move the snake, we need to first get the direction the snake is moving in. Firstly, if `dir-queue` is not empty, we need to remove the first direction from it (we will add new directions to the end of `dir-queue` and remove directions from the front), and update `dir` with it.
 
-- Then we create a new head for the snake by moving the old head (`snake[0]`) by `dir`. Then we check if the head is out of the bounds of the board or has overlapped with the body of the snake. This would imply that the snake has either collided with the walls of the board or with itself and we need to end the game. If there are no such collisions, we can add the new head to the front of `snake` and continue.
+-   Then we create a new head for the snake by moving the old head (`snake[0]`) by `dir`. Then we check if the head is out of the bounds of the board or has overlapped with the body of the snake. This would imply that the snake has either collided with the walls of the board or with itself and we need to end the game. If there are no such collisions, we can add the new head to the front of `snake` and continue.
 
-- Then we check if this new head overlaps with the position of the fruit, this would mean that the snake has eaten the fruit. If it does overlap, then we can increment the score and return from the function, and if it does not overlap, we must remove the last element of the snake.
+-   Then we check if this new head overlaps with the position of the fruit, this would mean that the snake has eaten the fruit. If it does overlap, then we can increment the score and return from the function, and if it does not overlap, we must remove the last element of the snake.
 
 Here is the function:
 
@@ -187,7 +187,25 @@ function move() {
 }
 ```
 
-### Step 4: Initialization
+### Step 5: Game Loop
+
+we will now write the game loop:
+
+```
+function run() {
+    if (is_playing) {
+        setTimeout(() => {
+            move();
+            render();
+            run();
+        }, 200);
+    }
+}
+```
+
+we are doing this weird recursive call to the game loop instead of writing a simple while-loop because javascript doesn't seem to have a normal `delay` function.
+
+### Step 6: Initialization
 
 Now we will initialize the variables, inside a function, so that we can play the game multiple times without reloading the page.
 
@@ -198,7 +216,111 @@ function begin() {
         make_fruit();
         dir = [0, -1];
         dir_queue = [];
+        render();
         run();
     }
 }
 ```
+
+Here, we are using `snake = [...Array(5).keys()].map(i=>[10,10+i]);` instead of `snake = [[10,10],[10,11],[10,12],[10,13],[10,14]];` only because the former is a smaller string than the latter. Otherwise they both result in a snake with a body of 5 cells starting from `[10, 10]` and ending in `[10, 14]`.
+
+### Step 7: Add a Direction to `dir_queue`
+
+we now need a function to add a direction to `dir_queue`.
+
+-   We create a new veriable `comp` to compare the new direction against. We first check if `dir_queue` is empty. If it is, then the `comp` is the current direction, else `comp` is the last direction added to `dir_queue`.
+
+-   Then we check if the new direction is orthogonal to `comp`. Only if the new direction is orthogonal, we add it to the end of `dir_queue`.
+
+Here is the function:
+
+```
+function add(new_dir) {
+    // get the variable to compare the new direction against
+    let comp;
+    if (dir_queue.length) comp = dir_queue[dir_queue.length - 1];
+    else comp = dir;
+
+    // compare the new direction and add to dir_queue
+    if (new_dir[0] * comp[0] + new_dir[1] * comp[1] == 0) dir_queue.push(new_dir);
+}
+```
+
+### Step 8: Functions to Play/Pause and Play/Stop the Game
+
+Here are functions to toggle `is_playing` and either call `run()` (when the game is paused/unpaused) or `begin()` (when the game is stopped/restarted).
+
+```
+function toggle_pause() {
+    is_playing = !is_playing;
+    if(snake) run();
+}
+
+function toggle_stop() {
+    is_playing = !is_playing;
+    begin();
+}
+```
+
+### Step 9: Add Event Listener to Listen to Key Presses
+
+Now we need to add the event listener to allow desktop players to use keyboard inputs to play the game. We will use the arrow keys to move the snake, the spacebar to pause and unpause the game, and the 'Enter' key to initially start, stop and restart the game. Here is the code:
+
+```
+document.addEventListener("keydown", e => {
+    switch (e.key) {
+        case "ArrowUp":
+            add([0,-1]);
+            break;
+        case "ArrowDown":
+            add([0,1]);
+            break;
+        case "ArrowLeft":
+            add([-1,0]);
+            break;
+        case "ArrowRight":
+            add([1,0]);
+            break;
+        case "Enter":
+            toggle_stop();
+            break;
+        case " ":
+            toggle_pause();
+            break;
+    }
+})
+```
+
+With this function, our game will be fully playable on desktop.
+
+### Step 10: Add Mobile Support
+
+For this, we need only call the same functions we called in the event listener when the corresponding buttons in the display are pressed. Here is the modified html, now with just the container `div`:
+
+```
+<div class="column container">
+	<canvas width="360" height="360" style="border: 2px solid white"></canvas>
+	<p>Score: <span>0</span></p>
+	<div class="row">
+		<div class="column">
+			<button onclick="add([0,-1])">U</button>
+			<div class="row">
+				<button onclick="add([-1,0])">L</button>
+                <button onclick="add([1,0])">R</button>
+			</div>
+			<button onclick="add([0,1])">D</button>
+		</div>
+		<div style="flex-grow: 1"></div>
+		<div class="column">
+			<button onclick="toggle_stop()">Play</button>
+            <button onclick="toggle_pause()">Pause</button>
+		</div>
+	</div>
+</div>
+```
+
+With this, our game is fully playable on both desktop and mobile devices.
+
+## Minification and creating the QR-Code
+
+I will not discuss the minification of the html file or the python script to create the qr-code in detail, because you can simply read the files for yourselves, the python file is rather easy to understand, and given the tutorial on top, the minified html file is also easy to understand, if you realise that some functions that are only called once are inlined istead of defining the function and using it only once.
